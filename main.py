@@ -1,8 +1,10 @@
-import typer
 from InquirerPy import inquirer
 from rich.console import Console
+import typer
+import os
+from pathlib import Path
 
-app = typer.Typer()
+cwd = Path.cwd()
 console = Console()
 
 
@@ -10,13 +12,10 @@ def new_dropdown(name: str, options: list[str]):
     return inquirer.select(name, options).execute()
 
 
-@app.command("create")
 def create():
     choice = new_dropdown("Test", ["test", "Test", "rw"])
-    console.print(
-        f"[green]You Selected:[/green] [bold magenta]{choice}[/bold magenta]"
-    )
+    os.mkdir(os.path.join(str(cwd), choice))
 
 
 if __name__ == "__main__":
-    app()
+    typer.run(create)
