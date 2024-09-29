@@ -1,38 +1,72 @@
-import time
-from InquirerPy import inquirer
-from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
-import typer
+"""CLI for Project Creator"""
+
 import os
 import subprocess
+from time import sleep
+
+import typer
+from InquirerPy import inquirer
+from rich.console import Console
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 
 cwd: str = os.getcwd()
 console: Console = Console()
 
 
-def new_dropdown(name: str, options: list[str]):
-    return inquirer.select(name, options).execute()
-
-
 def run_language(language: str, dir_name: str):
+    """Creates the project using the given language
+
+    Args:
+        language (str): The language for the project
+        dir_name (str): The directory where the project is located
+    """
     match language.lower():
         case "python":
-            create_venv: bool = inquirer.confirm(
-                "Create Virtual Environment?", default=False
-            ).execute()
-            if create_venv:
-                create_virtualenv("venv")
-            console.print("[green3 bold]Done[/green3 bold] :heavy_check_mark:")
+            handle_python()
         case "javascript/typescript":
-            os.chdir("..")
-            os.rmdir(dir_name)
-            subprocess.run(
-                f"npm create vite@latest {dir_name}", shell=True, text=True
-            )
-            console.print("[green4]Done[/green4] :heavy_check_mark:")
+            handle_js_ts(dir_name)
+        case "java":
+            handle_java()
+
+
+def handle_python():
+    """Handles creation of a python project"""
+    create_venv: bool = inquirer.confirm(
+        "Create Virtual Environment?", default=False
+    ).execute()
+    if create_venv:
+        create_virtualenv(".venv")
+    console.print("[green3 bold]Done[/green3 bold] :heavy_check_mark:")
+
+
+def handle_js_ts(dir_name: str):
+    """Handles creation of a JavaScript/TypeScript project
+
+    Args:
+        dir_name: The directory where the project is located
+    """
+    os.chdir("..")
+    os.rmdir(dir_name)
+    subprocess.run(
+        f"npm create vite@latest {dir_name}", shell=True, text=True, check=True
+    )
+    console.print("[green4]Done[/green4] :heavy_check_mark:")
+
+
+def handle_java():
+    """Handles creation of Java project"""
+    with open("main.java", "w", encoding="utf-8") as file:
+        file.write("public class main {\n")
+        file.write("\t\n")
+        file.write("}")
 
 
 def create_virtualenv(env_name: str):
+    """Creates a virtual environment for python
+
+    Args:
+        env_name (str): The name of the virtual environment
+    """
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -46,25 +80,27 @@ def create_virtualenv(env_name: str):
 
         # Run the command to create a virtual environment using subprocess
         process = subprocess.Popen(
-            [f"python", "-m", "venv", env_name],
+            ["python", "-m", "venv", env_name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
         )
 
         # Read the process output in real-time
         while process.poll() is None:
             progress.update(task, advance=5)
-            time.sleep(0.5)
+            sleep(0.5)
 
         progress.update(task, completed=100)
 
 
 def create():
-    language: str = new_dropdown(
-        "Pick a language", ["Python", "Javascript/Typescript"])
-    choice: str = new_dropdown("Test", ["test", "Test", "rw"])
-    dir_name: str = choice
+    """Creates a new project"""
+    language: str = inquirer.select(
+        "Pick a language", ["Python", "Javascript/Typescript", "Java"]
+    ).execute()
+    project_name: str = inquirer.text("Enter Project Name").execute()
+    dir_name: str = project_name
     extra_num: int = 0
 
     while True:
@@ -72,11 +108,11 @@ def create():
             os.mkdir(os.path.join(cwd, dir_name))
             break
         except FileExistsError:
-            dir_name = choice
+            dir_name = project_name
             extra_num += 1
             dir_name += str(extra_num)
 
-    os.chdir(choice)
+    os.chdir(dir_name)
     run_language(language, dir_name)
 
 
