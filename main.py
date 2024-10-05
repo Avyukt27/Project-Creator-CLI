@@ -1,29 +1,27 @@
+#!/usr/bin/env python3
 """Main Script"""
-
-# from sys import argv
-from enum import Enum
 
 import typer
 from rich.console import Console
-from typing_extensions import Annotated
 
-
-class Mode(str, Enum):
-    ui = "ui"
-    cli = "cli"
-
+import cli
+import ui
 
 console = Console()
+app = typer.Typer()
 
 
-def main(mode: Annotated[Mode, typer.Argument(help="The mode for preject creation")]):
-    """Starts project creation
+@app.command("ui")
+def ui_app():
+    """Runs the UI"""
+    ui.create()
 
-    Args:
-        mode (str): The mode for project creation.
-    """
-    console.print(mode)
+
+@app.command("cli")
+def cli_app():
+    """Runs the CLI"""
+    cli.create()
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()

@@ -2,14 +2,13 @@
 
 import os
 
-import typer
 from InquirerPy import inquirer
 
 import handler
 
 
 def create():
-    """Creates a new project"""
+    """Creates a new project using CLI"""
     language: str = inquirer.select(
         "Pick a language", ["Python", "Javascript/Typescript", "Java"]
     ).execute()
@@ -28,7 +27,3 @@ def create():
 
     os.chdir(dir_name)
     handler.run_language(language, dir_name)
-
-
-if __name__ == "__main__":
-    typer.run(create)

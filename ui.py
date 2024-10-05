@@ -1,19 +1,29 @@
 """UI for Project Creator"""
 
-import subprocess
+import os
+
+from InquirerPy import inquirer
+
+import handler
 
 
-def run_command(args):
-    """Runs a command
+def create():
+    """Creates a new project using UI"""
+    language: str = inquirer.select(
+        "Pick a language", ["Python", "Javascript/Typescript", "Java"]
+    ).execute()
+    project_name: str = inquirer.text("Enter Project Name").execute()
+    dir_name: str = project_name
+    extra_num: int = 0
 
-    Args:
-        args (_type_): _description_
+    while True:
+        try:
+            os.mkdir(os.path.join(os.getcwd(), dir_name))
+            break
+        except FileExistsError:
+            dir_name = project_name
+            extra_num += 1
+            dir_name += str(extra_num)
 
-    Returns:
-        _type_: _description_
-    """
-    result = subprocess.run(args, capture_output=True, text=True, check=True)
-    return result.stdout
-
-
-run_command("create")
+    os.chdir(dir_name)
+    handler.run_language(language, dir_name)
